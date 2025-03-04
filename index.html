@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trading Position Size Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #1a202c;
+            color: white;
+            padding: 16px;
+            text-align: center;
+        }
+        .card-title {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .card-description {
+            margin: 8px 0 0;
+            font-size: 14px;
+            color: #cbd5e0;
+        }
+        .card-content {
+            padding: 16px;
+        }
+        .card-footer {
+            background-color: #f8f9fa;
+            padding: 12px;
+            font-size: 14px;
+            color: #718096;
+            text-align: center;
+        }
+        .section-title {
+            background-color: #1a202c;
+            color: white;
+            padding: 8px;
+            margin: 0 0 16px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 16px;
+        }
+        .form-field {
+            flex: 1;
+            min-width: 140px;
+            margin-bottom: 10px;
+        }
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .input-group {
+            display: flex;
+        }
+        .input-addon {
+            background-color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            border: 1px solid #cbd5e0;
+        }
+        .input-addon-left {
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+        }
+        .input-addon-right {
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+        }
+        input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+        .left-input {
+            border-radius: 0 4px 4px 0;
+        }
+        .right-input {
+            border-radius: 4px 0 0 4px;
+        }
+        .yellow-bg {
+            background-color: #fffacd;
+        }
+        .results-container {
+            background-color: #f1f5f9;
+            border-radius: 4px;
+            padding: 12px;
+            margin-top: 16px;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .result-item {
+            text-align: center;
+        }
+        .result-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .result-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .positions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            background-color: #d1fae5;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 12px;
+        }
+        .position-item {
+            text-align: center;
+        }
+        .position-label {
+            font-size: 11px;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        .position-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .toggle-group {
+            display: inline-flex;
+            margin-left: 8px;
+        }
+        .toggle-button {
+            padding: 4px 8px;
+            font-size: 12px;
+            border: none;
+            background-color: #e2e8f0;
+            cursor: pointer;
+        }
+        .toggle-button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .toggle-button:first-child {
+            border-radius: 4px 0 0 4px;
+        }
+        .toggle-button:last-child {
+            border-radius: 0 4px 4px 0;
+        }
+        .border-bottom {
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+        
+        /* Mobile fixes */
+        @media (min-width: 600px) {
+            .form-row {
+                flex-direction: row;
+                gap: 16px;
+            }
+            .form-field {
+                margin-bottom: 0;
+            }
+        }
+        
+        /* Position type section styling */
+        .position-type-section {
+            margin-bottom: 16px;
+        }
+        .position-type-toggle {
+            display: flex;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+        .position-type-toggle button {
+            flex: 1;
+            padding: 10px 0;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+        }
+        .position-type-toggle .long-btn {
+            background-color: #e2e8f0;
+            border-radius: 4px 0 0 4px;
+        }
+        .position-type-toggle .short-btn {
+            background-color: #e2e8f0;
+            border-radius: 0 4px 4px 0;
+        }
+        .position-type-toggle .active {
+            background-color: #3b82f6;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Trading Position Size Calculator</h2>
+                <p class="card-description">Enter values in yellow input fields to calculate trading parameters</p>
+            </div>
+            <div class="card-content">
+                <!-- Position Type Section - Top of calculator -->
+                <div class="position-type-section">
+                    <h3 class="section-title">Position Type</h3>
+                    <div class="position-type-toggle">
+                        <button id="longToggle" class="long-btn active">Long</button>
+                        <button id="shortToggle" class="short-btn">Short</button>
+                    </div>
+                    <input type="hidden" id="positionType" value="long">
+                </div>
+                
+                <!-- Spot Trading Section -->
+                <div class="border-bottom">
+                    <h3 class="section-title">Spot Trading</h3>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-label">Portfolio Value</label>
+                            <div class="input-group">
+                                <div class="input-addon input-addon-left">$</div>
+                                <input id="portfolioValue" type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" class="left-input" value="130000">
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Risk %</label>
+                            <div class="input-group">
+                                <input id="riskPercentage" type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" class="right-input yellow-bg" value="2">
+                                <div class="input-addon input-addon-right">%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-label">Asset Price</label>
+                            <div class="input-group">
+                                <div class="input-addon input-addon-left">$</div>
+                                <input id="assetPrice" type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" class="left-input yellow-bg" value="84000">
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">
+                                Stop Loss
+                                <div class="toggle-group">
+                                    <button id="percentToggle" class="toggle-button active">%</button>
+                                    <button id="priceToggle" class="toggle-button">Price</button>
+                                </div>
+                            </label>
+                            <div id="percentInput" class="input-group">
+                                <input id="stopLossPercent" type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" class="right-input yellow-bg" value="6.5">
+                                <div class="input-addon input-addon-right">%</div>
+                            </div>
+                            <div id="priceInput" class="input-group" style="display: none;">
+                                <div class="input-addon input-addon-left">$</div>
+                                <input id="stopLossPrice" type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" class="left-input yellow-bg" value="78540">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="results-container">
+                        <div class="results-grid">
+                            <div class="result-item">
+                                <div class="result-label">Risk Amount</div>
+                                <div id="riskAmount" class="result-value">$2,600.00</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label"># Units</div>
+                                <div id="numUnits" class="result-value">0.48</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Entry Amount</div>
+                                <div id="entryAmount" class="result-value">$40,000.00</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="positions-grid">
+                        <div class="position-item">
+                            <div class="position-label">Position Size</div>
+                            <div id="positionSize" class="position-value">$40,000.00</div>
+                        </div>
+                        <div class="position-item">
+                            <div class="position-label">Entry Price</div>
+                            <div id="entryPrice" class="position-value">$84,000.00</div>
+                        </div>
+                        <div class="position-item">
+                            <div class="position-label">Stop Loss</div>
+                            <div id="stopLoss" class="position-value">$78,540.00</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Leverage Trading Section -->
+                <div>
+                    <h3 class="section-title">Leverage Trading</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="form-label">Risk %</label>
+                            <div class="input-group">
+                                <input id="leverageRiskPercent" type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" class="right-input yellow-bg" value="1">
+                                <div class="input-addon input-addon-right">%</div>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Leverage</label>
+                            <input id="leverage" type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" class="yellow-bg" value="2">
+                        </div>
+                    </div>
+                    
+                    <div class="results-container">
+                        <div class="results-grid">
+                            <div class="result-item">
+                                <div class="result-label">Risk Amount</div>
+                                <div id="leverageRiskAmount" class="result-value">$1,300.00</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Risk per Unit</div>
+                                <div id="riskPerUnit" class="result-value">$5,460.00</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Risk % / Trade</div>
+                                <div id="riskPerTrade" class="result-value">1.00%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="positions-grid">
+                        <div class="position-item">
+                            <div class="position-label">Position Size</div>
+                            <div id="leveragePositionSize" class="position-value">$20,000.00</div>
+                        </div>
+                        <div class="position-item">
+                            <div class="position-label">Entry Price</div>
+                            <div id="leverageEntryPrice" class="position-value">$84,000.00</div>
+                        </div>
+                        <div class="position-item">
+                            <div class="position-label">Stop Loss</div>
+                            <div id="leverageStopLoss" class="position-value">$78,540.00</div>
+                        </div>
+                    </div>
+                    
+                    <div class="positions-grid" style="margin-top: 8px; background-color: #ffe1e1;">
+                        <div class="position-item">
+                            <div class="position-label">Liquidation Price</div>
+                            <div id="liquidationPrice" class="position-value" style="color: #e53e3e;">$50,400.00</div>
+                        </div>
+                        <div class="position-item">
+                            <div class="position-label">Price to Liquidation</div>
+                            <div id="priceDropPercent" class="position-value" style="color: #e53e3e;">40.00% Drop</div>
+                        </div>
+                        <div class="position-item">
+                            <div class="position-label">Position Type</div>
+                            <div id="positionTypeDisplay" class="position-value">Long</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                All calculations update automatically as you change input values
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all required input elements
+            const portfolioValueInput = document.getElementById('portfolioValue');
+            const riskPercentageInput = document.getElementById('riskPercentage');
+            const assetPriceInput = document.getElementById('assetPrice');
+            const stopLossPercentInput = document.getElementById('stopLossPercent');
+            const stopLossPriceInput = document.getElementById('stopLossPrice');
+            const leverageRiskPercentInput = document.getElementById('leverageRiskPercent');
+            const leverageInput = document.getElementById('leverage');
+            const positionTypeInput = document.getElementById('positionType');
+            
+            // Get toggle buttons
+            const percentToggle = document.getElementById('percentToggle');
+            const priceToggle = document.getElementById('priceToggle');
+            const percentInputDiv = document.getElementById('percentInput');
+            const priceInputDiv = document.getElementById('priceInput');
+            
+            // Position type toggle buttons
+            const longToggle = document.getElementById('longToggle');
+            const shortToggle = document.getElementById('shortToggle');
+            
+            // Get result elements
+            const riskAmountEl = document.getElementById('riskAmount');
+            const numUnitsEl = document.getElementById('numUnits');
+            const entryAmountEl = document.getElementById('entryAmount');
+            const positionSizeEl = document.getElementById('positionSize');
+            const entryPriceEl = document.getElementById('entryPrice');
+            const stopLossEl = document.getElementById('stopLoss');
+            
+            const leverageRiskAmountEl = document.getElementById('leverageRiskAmount');
+            const riskPerUnitEl = document.getElementById('riskPerUnit');
+            const riskPerTradeEl = document.getElementById('riskPerTrade');
+            const leveragePositionSizeEl = document.getElementById('leveragePositionSize');
+            const leverageEntryPriceEl = document.getElementById('leverageEntryPrice');
+            const leverageStopLossEl = document.getElementById('leverageStopLoss');
+            const liquidationPriceEl = document.getElementById('liquidationPrice');
+            const priceDropPercentEl = document.getElementById('priceDropPercent');
+            const positionTypeDisplay = document.getElementById('positionTypeDisplay');
+            
+            // Set initial stop loss input method
+            let stopLossInputMethod = 'percent';
+            
+            // Helper function to format currency
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(value);
+            }
+            
+            // Helper function to remove leading zeros
+            function removeLeadingZeros(input) {
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/^0+(?=\d)/, '');
+                });
+                
+                input.addEventListener('focus', function() {
+                    this.select();
+                });
+            }
+            
+            // Apply remove leading zeros to all inputs
+            removeLeadingZeros(portfolioValueInput);
+            removeLeadingZeros(riskPercentageInput);
+            removeLeadingZeros(assetPriceInput);
+            removeLeadingZeros(stopLossPercentInput);
+            removeLeadingZeros(stopLossPriceInput);
+            removeLeadingZeros(leverageRiskPercentInput);
+            removeLeadingZeros(leverageInput);
+            
+            // Toggle between percent and price for stop loss
+            percentToggle.addEventListener('click', function() {
+                stopLossInputMethod = 'percent';
+                percentToggle.classList.add('active');
+                priceToggle.classList.remove('active');
+                percentInputDiv.style.display = 'flex';
+                priceInputDiv.style.display = 'none';
+                calculateAll();
+            });
+            
+            priceToggle.addEventListener('click', function() {
+                stopLossInputMethod = 'price';
+                priceToggle.classList.add('active');
+                percentToggle.classList.remove('active');
+                priceInputDiv.style.display = 'flex';
+                percentInputDiv.style.display = 'none';
+                calculateAll();
+            });
+            
+            // Toggle between long and short position
+            longToggle.addEventListener('click', function() {
+                positionTypeInput.value = 'long';
+                longToggle.classList.add('active');
+                shortToggle.classList.remove('active');
+                calculateAll();
+            });
+            
+            shortToggle.addEventListener('click', function() {
+                positionTypeInput.value = 'short';
+                shortToggle.classList.add('active');
+                longToggle.classList.remove('active');
+                calculateAll();
+            });
+            
+            // Add input event listeners
+            portfolioValueInput.addEventListener('input', calculateAll);
+            riskPercentageInput.addEventListener('input', calculateAll);
+            assetPriceInput.addEventListener('input', calculateAll);
+            stopLossPercentInput.addEventListener('input', calculateAll);
+            stopLossPriceInput.addEventListener('input', calculateAll);
+            leverageRiskPercentInput.addEventListener('input', calculateAll);
+            leverageInput.addEventListener('input', calculateAll);
+            
+            // Function to calculate all values
+            function calculateAll() {
+                // Get input values
+                const portfolioValue = parseFloat(portfolioValueInput.value) || 0;
+                const riskPercentage = parseFloat(riskPercentageInput.value) || 0;
+                const assetPrice = parseFloat(assetPriceInput.value) || 0;
+                const stopLossPercent = parseFloat(stopLossPercentInput.value) || 0;
+                const stopLossPrice = parseFloat(stopLossPriceInput.value) || 0;
+                const leverageRiskPercent = parseFloat(leverageRiskPercentInput.value) || 0;
+                const leverageValue = parseFloat(leverageInput.value) || 1;
+                const positionType = positionTypeInput.value; // 'long' or 'short'
+                
+                // Calculate risk amount
+                const riskAmount = portfolioValue * (riskPercentage / 100);
+                
+                // Determine stop loss price based on input method and position type
+                let calculatedStopLossPrice;
+                if (stopLossInputMethod === 'percent') {
+                    if (positionType === 'long') {
+                        // For long positions, stop loss is below entry price
+                        calculatedStopLossPrice = assetPrice * (1 - stopLossPercent / 100);
+                    } else {
+                        // For short positions, stop loss is above entry price
+                        calculatedStopLossPrice = assetPrice * (1 + stopLossPercent / 100);
+                    }
+                    stopLossPriceInput.value = calculatedStopLossPrice.toFixed(2);
+                } else {
+                    calculatedStopLossPrice = stopLossPrice;
+                    // Calculate percentage based on position type
+                    let calculatedPercent;
+                    if (positionType === 'long') {
+                        calculatedPercent = ((assetPrice - stopLossPrice) / assetPrice) * 100;
+                    } else {
+                        calculatedPercent = ((stopLossPrice - assetPrice) / assetPrice) * 100;
+                    }
+                    stopLossPercentInput.value = calculatedPercent.toFixed(2);
+                }
+                
+                // Calculate position size and units based on position type
+                let priceDistance;
+                if (positionType === 'long') {
+                    priceDistance = assetPrice - calculatedStopLossPrice;
+                } else {
+                    priceDistance = calculatedStopLossPrice - assetPrice;
+                }
+                
+                // Ensure price distance is not negative
+                priceDistance = Math.max(priceDistance, 0);
+                
+                const numUnits = priceDistance > 0 ? riskAmount / priceDistance : 0;
+                const positionSize = numUnits * assetPrice;
+                
+                // Calculate leverage values
+                const leverageRiskAmount = portfolioValue * (leverageRiskPercent / 100);
+                const riskPerUnit = priceDistance;
+                const riskPerTrade = leverageRiskPercent / 100;
+                
+                // Fix: Calculate position size correctly with leverage
+                // First calculate the position size as before
+                const rawLeveragePositionSize = leverageRiskAmount / (stopLossPercent / 100);
+                // Then divide by leverage to get the actual position size
+                const leveragePositionSize = rawLeveragePositionSize / leverageValue;
+                
+                // Calculate liquidation price based on position type
+                const maintenanceMarginRate = 0.005; // Standard 0.5% maintenance margin
+                let liquidationPrice;
+                
+                if (positionType === 'long') {
+                    // Long position liquidation price
+                    liquidationPrice = assetPrice * (1 - (1 / leverageValue) + maintenanceMarginRate);
+                } else {
+                    // Short position liquidation price
+                    liquidationPrice = assetPrice * (1 + (1 / leverageValue) - maintenanceMarginRate);
+                }
+                
+                // Update the display
+                riskAmountEl.textContent = formatCurrency(riskAmount);
+                numUnitsEl.textContent = numUnits.toFixed(2);
+                entryAmountEl.textContent = formatCurrency(positionSize);
+                
+                positionSizeEl.textContent = formatCurrency(positionSize);
+                entryPriceEl.textContent = formatCurrency(assetPrice);
+                stopLossEl.textContent = formatCurrency(calculatedStopLossPrice);
+                
+                leverageRiskAmountEl.textContent = formatCurrency(leverageRiskAmount);
+                riskPerUnitEl.textContent = formatCurrency(riskPerUnit);
+                riskPerTradeEl.textContent = (riskPerTrade * 100).toFixed(2) + '%';
+                
+                leveragePositionSizeEl.textContent = formatCurrency(leveragePositionSize);
+                leverageEntryPriceEl.textContent = formatCurrency(assetPrice);
+                leverageStopLossEl.textContent = formatCurrency(calculatedStopLossPrice);
+                
+                // Update liquidation price information
+                liquidationPriceEl.textContent = formatCurrency(liquidationPrice);
+                
+                let priceChangeText;
+                let priceDropToLiquidation;
+                
+                if (positionType === 'long') {
+                    priceDropToLiquidation = ((assetPrice - liquidationPrice) / assetPrice) * 100;
+                    priceChangeText = priceDropToLiquidation.toFixed(2) + '% Drop';
+                } else {
+                    priceDropToLiquidation = ((liquidationPrice - assetPrice) / assetPrice) * 100;
+                    priceChangeText = priceDropToLiquidation.toFixed(2) + '% Rise';
+                }
+                
+                priceDropPercentEl.textContent = priceChangeText;
+                positionTypeDisplay.textContent = positionType.charAt(0).toUpperCase() + positionType.slice(1);
+            }
+            
+            // Run calculations on page load
+            calculateAll();
+        });
+    </script>
+</body>
+</html>
