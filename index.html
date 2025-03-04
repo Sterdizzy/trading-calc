@@ -335,21 +335,21 @@
                         <div class="form-field">
                             <label class="form-label">Risk %</label>
                             <div class="input-group">
-                                <input id="leverageRiskPercent" type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" class="right-input yellow-bg" value="1">
+                                <input id="leverageRiskPercent" type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" class="right-input yellow-bg" value="2">
                                 <div class="input-addon input-addon-right">%</div>
                             </div>
                         </div>
                         <div class="form-field">
                             <label class="form-label">Leverage</label>
-                            <input id="leverage" type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" class="yellow-bg" value="2">
+                            <input id="leverage" type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" class="yellow-bg" value="20">
                         </div>
                     </div>
                     
                     <div class="results-container">
                         <div class="results-grid">
                             <div class="result-item">
-                                <div class="result-label">Risk Amount</div>
-                                <div id="leverageRiskAmount" class="result-value">$1,300.00</div>
+                                <div class="result-label">Margin Amount</div>
+                                <div id="leverageRiskAmount" class="result-value">$2,000.00</div>
                             </div>
                             <div class="result-item">
                                 <div class="result-label">Risk per Unit</div>
@@ -357,7 +357,7 @@
                             </div>
                             <div class="result-item">
                                 <div class="result-label">Risk % / Trade</div>
-                                <div id="riskPerTrade" class="result-value">1.00%</div>
+                                <div id="riskPerTrade" class="result-value">2.00%</div>
                             </div>
                         </div>
                     </div>
@@ -365,7 +365,7 @@
                     <div class="positions-grid">
                         <div class="position-item">
                             <div class="position-label">Position Size</div>
-                            <div id="leveragePositionSize" class="position-value">$20,000.00</div>
+                            <div id="leveragePositionSize" class="position-value">$40,000.00</div>
                         </div>
                         <div class="position-item">
                             <div class="position-label">Entry Price</div>
@@ -380,11 +380,11 @@
                     <div class="positions-grid" style="margin-top: 8px; background-color: #ffe1e1;">
                         <div class="position-item">
                             <div class="position-label">Liquidation Price</div>
-                            <div id="liquidationPrice" class="position-value" style="color: #e53e3e;">$50,400.00</div>
+                            <div id="liquidationPrice" class="position-value" style="color: #e53e3e;">$80,220.00</div>
                         </div>
                         <div class="position-item">
                             <div class="position-label">Price to Liquidation</div>
-                            <div id="priceDropPercent" class="position-value" style="color: #e53e3e;">40.00% Drop</div>
+                            <div id="priceDropPercent" class="position-value" style="color: #e53e3e;">4.50% Drop</div>
                         </div>
                         <div class="position-item">
                             <div class="position-label">Position Type</div>
@@ -568,16 +568,17 @@
                 const numUnits = priceDistance > 0 ? riskAmount / priceDistance : 0;
                 const positionSize = numUnits * assetPrice;
                 
-                // Calculate leverage values
+                // Calculate leverage values - FIXED CALCULATION HERE
                 const leverageRiskAmount = portfolioValue * (leverageRiskPercent / 100);
                 const riskPerUnit = priceDistance;
                 const riskPerTrade = leverageRiskPercent / 100;
                 
-                // Fix: Calculate position size correctly with leverage
-                // First calculate the position size as before
-                const rawLeveragePositionSize = leverageRiskAmount / (stopLossPercent / 100);
-                // Then divide by leverage to get the actual position size
-                const leveragePositionSize = rawLeveragePositionSize / leverageValue;
+                // Correct calculation for leverage position size
+                // Margin amount is the amount at risk from portfolio
+                const marginAmount = leverageRiskAmount;
+                
+                // Position size is margin × leverage (USDT-margined Futures formula)
+                const leveragePositionSize = marginAmount * leverageValue;
                 
                 // Calculate liquidation price based on position type
                 const maintenanceMarginRate = 0.005; // Standard 0.5% maintenance margin
